@@ -145,8 +145,14 @@ Kết quả test qua Nginx:
 
 ### Exercise 3.1: Railway Deployment (Agent Part 6 — `06-lab-complete/`)
 
-- **Platform:** Railway (`railway.toml` với `builder = "DOCKERFILE"`, `healthcheckPath = "/health"`) + Railway Redis service nối qua biến `REDIS_URL`.
-- **Public URL:** `PENDING_RAILWAY_URL` *(cập nhật ngay sau khi deploy xong ở CP6)*
+- **Platform:** Railway (`railway.toml` với `builder = "DOCKERFILE"`, `healthcheckPath = "/health"`) + Railway Redis service (`redis:8.2`) nối qua biến `REDIS_URL=${{Redis.REDIS_URL}}`.
+- **Public URL:** https://ai-agent-production-4db2828e.up.railway.app
+- **Kết quả tự kiểm 4 lệnh CP6 trên URL public:**
+  - `GET $BASE/health` → `200` (`{"status":"ok","environment":"production"}`)
+  - `GET $BASE/ready` → `200` (`{"status":"ready","redis":"connected"}`)
+  - `POST $BASE/ask` (không có `X-API-Key`) → `401` (`{"detail":"Invalid or missing API key"}`)
+  - `POST $BASE/ask` (có `X-API-Key: $AGENT_API_KEY`) → `200` (`{"question":"Hello","answer":"...","user_id":"verify","cost_usd":1.05e-05}`)
+  - `POST $BASE/ask` (body sai schema) → `422` (`{"error":"validation_error",...}`)
 - **Screenshots:** [dashboard.png](screenshots/dashboard.png) · [running.png](screenshots/running.png) · [test.png](screenshots/test.png)
 - **Chi tiết lệnh test & env vars:** xem [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -396,7 +402,7 @@ Total messages: 10
 
 ## Part 6: Final Project — Output `check_production_ready.py`
 
-Chạy đầy đủ trong `06-lab-complete/` trên WSL2 Ubuntu 24.04 với Docker `29.1.3`:
+Chạy đầy đủ trong `06-lab-complete/` trên WSL2 Ubuntu 24.04 với Docker `29.1.3` kèm `--public-url https://ai-agent-production-4db2828e.up.railway.app`:
 
 ```text
 ================================================================
@@ -414,7 +420,7 @@ Chạy đầy đủ trong `06-lab-complete/` trên WSL2 Ubuntu 24.04 với Docke
      ✅ Graceful shutdown
      ✅ Public URL ready (Railway / Render config)
 ----------------------------------------------------------------
-  Result: 12/12 tiêu chí đạt · 41/41 checks passed
+  Result: 12/12 tiêu chí đạt · 42/42 checks passed
   🎉 PASS 12/12 — PRODUCTION READY! Deploy nào!
 ================================================================
 ```
